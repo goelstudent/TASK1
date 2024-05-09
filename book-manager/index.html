@@ -1,0 +1,79 @@
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Book Manager</title>
+</head>
+<body>
+  <h1>Book Manager</h1>
+  <form id="bookForm">
+    <input type="text" id="title" placeholder="Title" required><br>
+    <input type="text" id="author" placeholder="Author" required><br>
+    <input type="text" id="genre" placeholder="Genre" required><br>
+    <input type="number" id="published" placeholder="Published Year" required><br>
+    <button type="submit">Add Book</button>
+  </form>
+
+  <div id="bookList"></div>
+
+  <script>
+    const bookForm = document.getElementById('bookForm');
+    const bookList = document.getElementById('bookList');
+
+
+    async function fetchBooks() {
+      const response = await fetch('http://localhost:3001/api/books');
+      const books = await response.json();
+      return books;
+    }
+
+    
+    async function displayBooks() {
+      bookList.innerHTML = '';
+      const books = await fetchBooks();
+      books.forEach(book => {
+        const bookItem = document.createElement('div');
+        bookItem.innerHTML = `
+          <h3>${book.title}</h3>
+          <p>Author: ${book.author}</p>
+          <p>Genre: ${book.genre}</p>
+          <p>Published: ${book.published}</p>
+        `;
+        bookList.appendChild(bookItem);
+      });
+    }
+
+
+    bookForm.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      const title = document.getElementById('title').value;
+      const author = document.getElementById('author').value;
+      const genre = document.getElementById('genre').value;
+      const published = document.getElementById('published').value;
+
+      const response = await fetch('http://localhost:3001/api/books', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ title, author, genre, published })
+      });
+
+      if (response.ok) {
+        document.getElementById('title').value = '';
+        document.getElementById('author').value = '';
+        document.getElementById('genre').value = '';
+        document.getElementById('published').value = '';
+        displayBooks();
+      } else {
+        alert('Failed to add book');
+      }
+    });
+
+    displayBooks();
+  </script>
+</body>
+</html>
